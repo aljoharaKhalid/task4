@@ -162,6 +162,7 @@ struct vpslot_toolkit {
 
 struct vpslot_terrain_transform {
     std::set<std::string> pre_flags;
+    // TODO: Change to string ids?
     std::string post_terrain;
     std::string post_furniture;
     std::string post_field;

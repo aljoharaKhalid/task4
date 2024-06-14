@@ -26,10 +26,12 @@ struct ammo_effect {
         void check() const;
         fake_spell spell_data;
 
+        // TODO: Change to field_type_str_id?
         field_type_id aoe_field_type = fd_null.id_or( INVALID_FIELD_TYPE_ID );
         /** used during JSON loading only */
         int trigger_chance = 1;
 
+        // TODO: Why is this temporarily stored as a raw string?
         std::string aoe_field_type_name = "fd_null";
         int aoe_intensity_min = 0;
         int aoe_intensity_max = 0;
@@ -46,8 +48,10 @@ struct ammo_effect {
         bool do_emp_blast = false;
         bool foamcrete_build = false;
 
+        // TODO: Change to field_type_str_id?
         field_type_id trail_field_type = fd_null.id_or( INVALID_FIELD_TYPE_ID );
         /** used during JSON loading only */
+        // TODO: Why is this temporarily stored as a raw string?
         std::string trail_field_type_name = "fd_null";
         int trail_intensity_min = 0;
         int trail_intensity_max = 0;

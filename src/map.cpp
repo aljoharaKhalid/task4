@@ -41,7 +41,6 @@
 #include "enums.h"
 #include "explosion.h"
 #include "field.h"
-#include "field_type.h"
 #include "flag.h"
 #include "fragment_cloud.h"
 #include "fungal_effects.h"
@@ -122,6 +121,10 @@ static const efftype_id effect_incorporeal( "incorporeal" );
 static const efftype_id effect_pet( "pet" );
 
 static const field_type_str_id field_fd_clairvoyant( "fd_clairvoyant" );
+static const field_type_str_id field_fd_electricity( "fd_electricity" );
+static const field_type_str_id field_fd_electricity_unlit( "fd_electricity_unlit" );
+static const field_type_str_id field_fd_fire( "fd_fire" );
+static const field_type_str_id field_fd_web( "fd_web" );
 
 static const flag_id json_flag_AVATAR_ONLY( "AVATAR_ONLY" );
 static const flag_id json_flag_LEVITATION( "LEVITATION" );
@@ -3519,7 +3522,7 @@ bool map::is_flammable( const tripoint &p )
         return true;
     }
 
-    if( get_field_intensity( p, fd_web ) > 0 ) {
+    if( get_field_intensity( p, field_fd_web ) > 0 ) {
         return true;
     }
 
@@ -3631,7 +3634,7 @@ bool map::has_adjacent_furniture_with( const tripoint &p,
 bool map::has_nearby_fire( const tripoint &p, int radius ) const
 {
     for( const tripoint &pt : points_in_radius( p, radius ) ) {
-        if( has_field_at( pt, fd_fire ) ) {
+        if( has_field_at( pt, field_fd_fire ) ) {
             return true;
         }
         if( has_flag_ter_or_furn( ter_furn_flag::TFLAG_USABLE_FIRE, p ) ) {
@@ -3940,7 +3943,8 @@ void map::smash_items( const tripoint &p, const int power, const std::string &ca
                 item_was_damaged = true;
             }
         } else {
-            const field_type_id type_blood = i->is_corpse() ? i->get_mtype()->bloodType() : fd_null;
+            const field_type_id type_blood = i->is_corpse() ? i->get_mtype()->bloodType() :
+                                             field_type_str_id::NULL_ID();
             while( ( damage_chance > material_factor || x_in_y( damage_chance, material_factor ) ) &&
                    ( i->damage() < i->max_damage() ) ) {
                 i->inc_damage();
@@ -4582,10 +4586,10 @@ void map::shoot( const tripoint &p, projectile &proj, const bool hit_items )
             // only very flammable furn/ter can be set alight with incendiary rounds
             if( data.has_flag( ter_furn_flag::TFLAG_FLAMMABLE_ASH ) ) {
                 if( incendiary && x_in_y( 1, 10 ) ) { // 10% chance
-                    add_field( p, fd_fire, 1 );
+                    add_field( p, field_fd_fire, 1 );
                 }
                 if( ignite ) {
-                    add_field( p, fd_fire, 1 );
+                    add_field( p, field_fd_fire, 1 );
                 }
             }
             // bash_ter_furn already triggers the alarm
@@ -4631,7 +4635,7 @@ void map::shoot( const tripoint &p, projectile &proj, const bool hit_items )
         for( const std::pair<const field_type_id, field_entry> &fd : fields_copy ) {
             if( fd.first->bash_info.str_min > 0 ) {
                 if( incendiary ) {
-                    add_field( p, fd_fire, fd.second.get_field_intensity() - 1 );
+                    add_field( p, field_fd_fire, fd.second.get_field_intensity() - 1 );
                 } else if( dam > 5 + fd.second.get_field_intensity() * 5 &&
                            one_in( 5 - fd.second.get_field_intensity() ) ) {
                     dam -= rng( 1, 2 + fd.second.get_field_intensity() * 2 );
@@ -4718,7 +4722,7 @@ bool map::hit_with_fire( const tripoint &p )
     // non passable but flammable terrain, set it on fire
     if( has_flag( ter_furn_flag::TFLAG_FLAMMABLE, p ) ||
         has_flag( ter_furn_flag::TFLAG_FLAMMABLE_ASH, p ) ) {
-        add_field( p, fd_fire, 3 );
+        add_field( p, field_fd_fire, 3 );
     }
     return true;
 }
@@ -5420,7 +5424,7 @@ item &map::add_item( const tripoint &p, item new_item, int copies )
         return null_item_reference();
     }
 
-    if( new_item.has_flag( flag_ACT_IN_FIRE ) && get_field( p, fd_fire ) != nullptr ) {
+    if( new_item.has_flag( flag_ACT_IN_FIRE ) && get_field( p, field_fd_fire ) != nullptr ) {
         if( new_item.has_flag( flag_BOMB ) && new_item.is_transformable() ) {
             //Convert a bomb item into its transformable version, e.g. incendiary grenade -> active incendiary grenade
             new_item.convert( dynamic_cast<const iuse_transform *>
@@ -6615,8 +6619,8 @@ bool map::add_field( const tripoint &p, const field_type_id &type_id, int intens
     }
 
     // Hacky way to force electricity fields to become unlit electricity fields
-    const field_type_id &converted_type_id = ( type_id == fd_electricity ||
-            type_id == fd_electricity_unlit ) ? get_applicable_electricity_field( p ) : type_id;
+    const field_type_id &converted_type_id = ( type_id == field_fd_electricity ||
+            type_id == field_fd_electricity_unlit ) ? get_applicable_electricity_field( p ) : type_id;
     const field_type &fd_type = *converted_type_id;
 
     intensity = std::min( intensity, fd_type.get_max_intensity() );

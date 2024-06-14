@@ -28,7 +28,6 @@
 #include "debug.h"
 #include "enums.h"
 #include "fault.h"
-#include "field_type.h"
 #include "flag.h"
 #include "flexbuffer_json-inl.h"
 #include "flexbuffer_json.h"
@@ -73,6 +72,12 @@ static const efftype_id effect_deaf( "deaf" );
 static const efftype_id effect_emp( "emp" );
 static const efftype_id effect_stunned( "stunned" );
 static const efftype_id effect_teleglow( "teleglow" );
+
+static const field_type_str_id field_fd_fire( "fd_fire" );
+static const field_type_str_id field_fd_blood( "fd_blood" );
+static const field_type_str_id field_fd_bile( "fd_bile" );
+static const field_type_str_id field_fd_slime( "fd_slime" );
+static const field_type_str_id field_fd_nuke_gas( "fd_nuke_gas" );
 
 static const flag_id json_flag_ACTIVATE_ON_PLACE( "ACTIVATE_ON_PLACE" );
 
@@ -316,7 +321,7 @@ static void do_blast( const Creature *source, const tripoint &p, const float pow
             if( force > 10.0f || x_in_y( force, 10.0f ) ) {
                 intensity++;
             }
-            here.add_field( pt, fd_fire, intensity );
+            here.add_field( pt, field_fd_fire, intensity );
         }
 
         if( const optional_vpart_position vp = here.veh_at( pt ) ) {
@@ -844,27 +849,27 @@ void resonance_cascade( const tripoint &p )
                 case 5:
                     for( int k = i - 1; k <= i + 1; k++ ) {
                         for( int l = j - 1; l <= j + 1; l++ ) {
-                            field_type_id type = fd_null;
-                            switch( rng( 1, 7 ) ) {
-                                case 1:
-                                    type = fd_blood;
-                                    break;
-                                case 2:
-                                    type = fd_bile;
-                                    break;
-                                case 3:
-                                case 4:
-                                    type = fd_slime;
-                                    break;
-                                case 5:
-                                    type = fd_fire;
-                                    break;
-                                case 6:
-                                case 7:
-                                    type = fd_nuke_gas;
-                                    break;
-                            }
                             if( !one_in( 3 ) ) {
+                                field_type_str_id type;
+                                switch( rng( 1, 7 ) ) {
+                                    case 1:
+                                        type = field_fd_blood;
+                                        break;
+                                    case 2:
+                                        type = field_fd_bile;
+                                        break;
+                                    case 3:
+                                    case 4:
+                                        type = field_fd_slime;
+                                        break;
+                                    case 5:
+                                        type = field_fd_fire;
+                                        break;
+                                    case 6:
+                                    case 7:
+                                        type = field_fd_nuke_gas;
+                                        break;
+                                }
                                 // TODO: fix point types
                                 here.add_field( tripoint_bub_ms{ k, l, p.z }, type, 3 );
                             }

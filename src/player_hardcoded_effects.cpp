@@ -17,7 +17,6 @@
 #include "enums.h"
 #include "event.h"
 #include "event_bus.h"
-#include "field_type.h"
 #include "fungal_effects.h"
 #include "game.h"
 #include "input.h"
@@ -100,6 +99,8 @@ static const efftype_id effect_valium( "valium" );
 static const efftype_id effect_visuals( "visuals" );
 static const efftype_id effect_weak_antibiotic( "weak_antibiotic" );
 static const efftype_id effect_winded( "winded" );
+
+static const field_type_str_id field_fd_tindalos_rift( "fd_tindalos_rift" );
 
 static const furn_str_id furn_f_rubble_rock( "f_rubble_rock" );
 
@@ -1392,7 +1393,7 @@ void Character::hardcoded_effects( effect &it )
         add_msg_if_player( m_bad, _( "You are beset with a vision of a prowling beast." ) );
         for( const tripoint &dest : here.points_in_radius( pos(), 6 ) ) {
             if( here.is_cornerfloor( dest ) ) {
-                here.add_field( dest, fd_tindalos_rift, 3 );
+                here.add_field( dest, field_fd_tindalos_rift, 3 );
                 add_msg_if_player( m_info, _( "Your surroundings are permeated with a foul scent." ) );
                 // Queue the effect for removal, since it's done all it needs to do to the target.
                 it.set_duration( 0_turns );
