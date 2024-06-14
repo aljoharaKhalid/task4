@@ -194,6 +194,8 @@ static const efftype_id effect_social_dissatisfied( "social_dissatisfied" );
 static const efftype_id effect_social_satisfied( "social_satisfied" );
 static const efftype_id effect_under_operation( "under_operation" );
 
+static const field_type_str_id field_fd_acid( "fd_acid" );
+
 static const furn_str_id furn_f_compost_empty( "f_compost_empty" );
 static const furn_str_id furn_f_compost_full( "f_compost_full" );
 static const furn_str_id furn_f_fvat_empty( "f_fvat_empty" );
@@ -1331,9 +1333,6 @@ void activity_handlers::butcher_finish( player_activity *act, Character *you )
     }
 
     item &corpse_item = *target;
-    const mtype *corpse = corpse_item.get_mtype();
-    const field_type_id type_blood = corpse->bloodType();
-    const field_type_id type_gib = corpse->gibType();
 
     // Dump items from the "container" before destroying it.
     // Presumably, the character would be doing this while setting up for butchering.
@@ -1345,6 +1344,10 @@ void activity_handlers::butcher_finish( player_activity *act, Character *you )
         act->index = true;
         return;
     }
+
+    const mtype *corpse = corpse_item.get_mtype();
+    const field_type_id type_blood = corpse->bloodType();
+    const field_type_id type_gib = corpse->gibType();
 
     map &here = get_map();
     if( action == butcher_type::DISMEMBER ) {
@@ -1811,7 +1814,7 @@ void activity_handlers::pulp_do_turn( player_activity *act, Character *you )
     for( item &corpse : corpse_pile ) {
         const mtype *corpse_mtype = corpse.get_mtype();
         const bool acid_immune = you->is_immune_damage( damage_acid ) ||
-                                 you->is_immune_field( fd_acid );
+                                 you->is_immune_field( field_fd_acid );
         if( !corpse.is_corpse() || !corpse.can_revive() ||
             ( ( std::find( act->str_values.begin(), act->str_values.end(), "auto_pulp_no_acid" ) !=
                 act->str_values.end() && corpse_mtype->bloodType().obj().has_acid ) && !acid_immune ) ) {
