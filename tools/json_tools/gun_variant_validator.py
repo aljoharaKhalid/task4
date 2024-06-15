@@ -108,7 +108,6 @@ IDENTIFIER_CHECK_BLACKLIST = {
     "hk_g3",
     "briefcase_smg",
     "mauser_m714",
-    "ksub2000",
     "smg_9mm",
     "colt_ro635",
     "arx160",

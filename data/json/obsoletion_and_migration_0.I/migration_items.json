@@ -1351,6 +1351,11 @@
     "reset_item_vars": true
   },
   {
+    "id": "cx4",
+    "type": "MIGRATION",
+    "replace": "ruger_pcc"
+  },
+  {
     "id": "raw_lentils",
     "type": "MIGRATION",
     "replace": "dry_lentils"
