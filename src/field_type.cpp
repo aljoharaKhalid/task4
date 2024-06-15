@@ -8,8 +8,6 @@
 #include "generic_factory.h"
 #include "json.h"
 
-const field_type_str_id fd_null = field_type_str_id::NULL_ID();
-
 namespace io
 {
 
@@ -109,7 +107,8 @@ int_id<field_type> string_id<field_type>::id_or( const int_id<field_type> &fallb
 template<>
 int_id<field_type> string_id<field_type>::id() const
 {
-    return get_all_field_types().convert( *this, fd_null.id_or( int_id<field_type>() ) );
+    return get_all_field_types().convert( *this,
+                                          field_type_str_id::NULL_ID().id_or( int_id<field_type>() ) );
 }
 
 /** @relates int_id */
@@ -280,7 +279,7 @@ void field_type::finalize()
 
     if( !wandering_field.is_valid() ) {
         debugmsg( "Invalid wandering_field_id %s in field %s.", wandering_field.c_str(), id.c_str() );
-        wandering_field = fd_null;
+        wandering_field = field_type_str_id::NULL_ID();
     }
 
     for( const mtype_id &m_id : immune_mtypes ) {

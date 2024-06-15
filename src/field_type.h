@@ -124,9 +124,6 @@ struct field_intensity_level {
     std::vector<field_effect> field_effects;
 };
 
-const field_type_id INVALID_FIELD_TYPE_ID = field_type_id( -1 );
-extern const field_type_str_id fd_null;
-
 struct field_type;
 
 struct field_type {

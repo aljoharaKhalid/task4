@@ -111,10 +111,8 @@ void field_entry::do_decay()
     }
 }
 
-field::field()
-    : _displayed_field_type( fd_null.id_or( INVALID_FIELD_TYPE_ID ) )
-{
-}
+field::field() : _displayed_field_type(
+        field_type_str_id::NULL_ID().id_or( field_type_id( -1 ) ) ) {}
 
 /*
 Function: find_field
