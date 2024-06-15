@@ -113,6 +113,9 @@ static const effect_on_condition_id
 effect_on_condition_EOC_test_weapon_damage( "EOC_test_weapon_damage" );
 static const effect_on_condition_id effect_on_condition_EOC_try_kill( "EOC_try_kill" );
 
+static const field_type_str_id field_fd_blood( "fd_blood" );
+static const field_type_str_id field_fd_blood_insect( "fd_blood_insect" );
+
 static const flag_id json_flag_FILTHY( "FILTHY" );
 
 static const furn_str_id furn_f_cardboard_box( "f_cardboard_box" );
@@ -481,8 +484,8 @@ TEST_CASE( "EOC_math_field", "[eoc][math_parser]" )
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    get_map().add_field( get_avatar().pos(), fd_blood, 3 );
-    get_map().add_field( get_avatar().pos() + point_south, fd_blood_insect, 3 );
+    get_map().add_field( get_avatar().pos(), field_fd_blood, 3 );
+    get_map().add_field( get_avatar().pos() + point_south, field_fd_blood_insect, 3 );
 
     REQUIRE( globvars.get_global_value( "npctalk_var_key_field_strength" ).empty() );
     REQUIRE( globvars.get_global_value( "npctalk_var_key_field_strength_north" ).empty() );
