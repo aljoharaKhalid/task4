@@ -865,7 +865,7 @@ static void handle_remove_fd_fatigue_field( const std::pair<field, tripoint>
          ( fd_fatigue_field ) ) {
         const int &intensity = fd.second.get_field_intensity();
         const translation &intensity_name = fd.second.get_intensity_level().name;
-        const tripoint &field_position = fd_fatigue_field.second;
+        const tripoint &field_position = std::get<1>( fd_fatigue_field );
         const bool sees_field = caster.sees( field_position );
 
         switch( intensity ) {
