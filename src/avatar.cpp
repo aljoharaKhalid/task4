@@ -34,7 +34,6 @@
 #include "event.h"
 #include "event_bus.h"
 #include "faction.h"
-#include "field_type.h"
 #include "flexbuffer_json-inl.h"
 #include "flexbuffer_json.h"
 #include "game.h"
@@ -105,6 +104,8 @@ static const efftype_id effect_stim_overdose( "stim_overdose" );
 static const efftype_id effect_stunned( "stunned" );
 
 static const faction_id faction_your_followers( "your_followers" );
+
+static const field_type_str_id field_fd_web( "fd_web" );
 
 static const itype_id itype_guidebook( "guidebook" );
 static const itype_id itype_mut_longpull( "mut_longpull" );
@@ -1990,7 +1991,7 @@ void avatar::try_to_sleep( const time_duration &dur )
         webforce = true;
     }
     if( websleep || webforce ) {
-        int web = here.get_field_intensity( pos(), fd_web );
+        int web = here.get_field_intensity( pos(), field_fd_web );
         if( !webforce ) {
             // At this point, it's kinda weird, but surprisingly comfy...
             if( web >= 3 ) {
@@ -2000,7 +2001,7 @@ void avatar::try_to_sleep( const time_duration &dur )
             } else if( web > 0 ) {
                 add_msg_if_player( m_info,
                                    _( "You try to sleep, but the webs get in the way.  You brush them aside." ) );
-                here.remove_field( pos(), fd_web );
+                here.remove_field( pos(), field_fd_web );
             }
         } else {
             // Here, you're just not comfortable outside a nice thick web.

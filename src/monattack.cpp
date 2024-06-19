@@ -38,7 +38,6 @@
 #include "event.h"
 #include "event_bus.h"
 #include "explosion.h"
-#include "field_type.h"
 #include "flag.h"
 #include "fungal_effects.h"
 #include "game.h"
@@ -145,6 +144,19 @@ static const efftype_id effect_slimed( "slimed" );
 static const efftype_id effect_social_dissatisfied( "social_dissatisfied" );
 static const efftype_id effect_stunned( "stunned" );
 static const efftype_id effect_targeted( "targeted" );
+
+static const field_type_str_id field_fd_acid( "fd_acid" );
+static const field_type_str_id field_fd_bile( "fd_bile" );
+static const field_type_str_id field_fd_dazzling( "fd_dazzling" );
+static const field_type_str_id field_fd_electricity( "fd_electricity" );
+static const field_type_str_id field_fd_fire( "fd_fire" );
+static const field_type_str_id field_fd_fungal_haze( "fd_fungal_haze" );
+static const field_type_str_id field_fd_gibs_flesh( "fd_gibs_flesh" );
+static const field_type_str_id field_fd_relax_gas( "fd_relax_gas" );
+static const field_type_str_id field_fd_smoke( "fd_smoke" );
+static const field_type_str_id field_fd_spotlight( "fd_spotlight" );
+static const field_type_str_id field_fd_tear_gas( "fd_tear_gas" );
+static const field_type_str_id field_fd_tindalos_rift( "fd_tindalos_rift" );
 
 static const gun_mode_id gun_mode_AUTO( "AUTO" );
 
@@ -819,7 +831,7 @@ bool mattack::acid( monster *z )
             if( here.passable( dest ) &&
                 here.clear_path( dest, hitp, 6, 1, 100 ) &&
                 ( ( one_in( std::abs( j ) ) && one_in( std::abs( i ) ) ) || ( i == 0 && j == 0 ) ) ) {
-                here.add_field( dest, fd_acid, 2 );
+                here.add_field( dest, field_fd_acid, 2 );
             }
         }
     }
@@ -841,7 +853,7 @@ bool mattack::acid_barf( monster *z )
 
     z->mod_moves( -to_moves<int>( 1_seconds ) * 0.8 );
     // Make sure it happens before uncanny dodge
-    get_map().add_field( target->pos(), fd_acid, 1 );
+    get_map().add_field( target->pos(), field_fd_acid, 1 );
 
     bodypart_id hit = target->get_random_body_part();
     damage_instance dam_inst = damage_instance( damage_acid, rng( 5, 12 ) );
@@ -969,14 +981,14 @@ bool mattack::shockstorm( monster *z )
     // Fill the LOS with electricity
     for( tripoint &i : bolt ) {
         if( !one_in( 4 ) ) {
-            here.add_field( i, fd_electricity, rng( 1, 3 ) );
+            here.add_field( i, field_fd_electricity, rng( 1, 3 ) );
         }
     }
 
     // 3x3 cloud of electricity at the square hit
     for( const tripoint &dest : here.points_in_radius( tarp, 1 ) ) {
         if( one_in( 3 ) ) {
-            here.add_field( dest, fd_electricity, rng( 4, 10 ) );
+            here.add_field( dest, field_fd_electricity, rng( 4, 10 ) );
         }
     }
 
@@ -1098,10 +1110,10 @@ bool mattack::boomer( monster *z )
         add_msg( m_warning, _( "The %s spews bile!" ), z->name() );
     }
     for( tripoint &i : line ) {
-        here.add_field( i, fd_bile, 1.0f );
+        here.add_field( i, field_fd_bile, 1.0f );
         // If bile hit a solid tile, return.
         if( here.impassable( i ) ) {
-            here.add_field( i, fd_bile, 3 );
+            here.add_field( i, field_fd_bile, 3 );
             add_msg_if_player_sees( i,  _( "Bile splatters on the %s!" ), here.tername( i ) );
             return true;
         }
@@ -1139,9 +1151,9 @@ bool mattack::boomer_glow( monster *z )
         add_msg( m_warning, _( "The %s spews bile!" ), z->name() );
     }
     for( tripoint &i : line ) {
-        here.add_field( i, fd_bile, 1 );
+        here.add_field( i, field_fd_bile, 1 );
         if( here.impassable( i ) ) {
-            here.add_field( i, fd_bile, 3 );
+            here.add_field( i, field_fd_bile, 3 );
             add_msg_if_player_sees( i, _( "Bile splatters on the %s!" ), here.tername( i ) );
             return true;
         }
@@ -1211,7 +1223,7 @@ bool mattack::resurrect( monster *z )
                mt->in_species( species_ZOMBIE ) && !mt->has_flag( mon_flag_NO_NECRO ) ) ) {
             continue;
         }
-        if( here.get_field_intensity( p, fd_fire ) > 1 || !sees_and_is_empty( p ) ) {
+        if( here.get_field_intensity( p, field_fd_fire ) > 1 || !sees_and_is_empty( p ) ) {
             continue;
         }
 
@@ -1586,7 +1598,7 @@ bool mattack::science( monster *const z ) // I said SCIENCE again!
             // fill empty tiles with acid
             for( size_t i = 0; i < empty_neighbor_count; ++i ) {
                 const tripoint &p = empty_neighbors.first[i];
-                here.add_field( p, fd_acid, att_acid_intensity );
+                here.add_field( p, field_fd_acid, att_acid_intensity );
             }
         }
         break;
@@ -1982,7 +1994,7 @@ bool mattack::fungus_haze( monster *z )
     z->mod_moves( -to_moves<int>( 1_seconds ) * 1.5 );
     map &here = get_map();
     for( const tripoint &dest : here.points_in_radius( z->pos(), 3 ) ) {
-        here.add_field( dest, fd_fungal_haze, rng( 1, 2 ) );
+        here.add_field( dest, field_fd_fungal_haze, rng( 1, 2 ) );
     }
 
     return true;
@@ -1995,13 +2007,13 @@ bool mattack::fungus_big_blossom( monster *z )
     map &here = get_map();
     // Fungal fire-suppressor! >:D
     for( const tripoint &dest : here.points_in_radius( z->pos(), 6 ) ) {
-        if( here.get_field_intensity( dest, fd_fire ) != 0 ) {
+        if( here.get_field_intensity( dest, field_fd_fire ) != 0 ) {
             firealarm = true;
         }
         if( firealarm ) {
-            here.remove_field( dest, fd_fire );
-            here.remove_field( dest, fd_smoke );
-            here.add_field( dest, fd_fungal_haze, 3 );
+            here.remove_field( dest, field_fd_fire );
+            here.remove_field( dest, field_fd_smoke );
+            here.add_field( dest, field_fd_fungal_haze, 3 );
         }
     }
     // Special effects handled outside the loop
@@ -2028,7 +2040,7 @@ bool mattack::fungus_big_blossom( monster *z )
         }
         z->mod_moves( -to_moves<int>( 1_seconds ) * 1.5 );
         for( const tripoint &dest : here.points_in_radius( z->pos(), 12 ) ) {
-            here.add_field( dest, fd_fungal_haze, rng( 1, 2 ) );
+            here.add_field( dest, field_fd_fungal_haze, rng( 1, 2 ) );
         }
     }
 
@@ -3627,7 +3639,7 @@ void mattack::flame( monster *z, Creature *target )
                                         here.tername( i.xy() ) );
                 return;
             }
-            here.add_field( i, fd_fire, 1 );
+            here.add_field( i, field_fd_fire, 1 );
         }
         target->add_effect( effect_onfire, 8_turns, bodypart_id( "torso" ) );
 
@@ -3649,7 +3661,7 @@ void mattack::flame( monster *z, Creature *target )
                                     here.tername( i.xy() ) );
             return;
         }
-        here.add_field( i, fd_fire, 1 );
+        here.add_field( i, field_fd_fire, 1 );
     }
     if( !target->uncanny_dodge() ) {
         target->add_effect( effect_onfire, 8_turns, bodypart_id( "torso" ) );
@@ -4385,7 +4397,7 @@ bool mattack::riotbot( monster *z )
         for( const tripoint &dest : here.points_in_radius( z->pos(), 4 ) ) {
             if( here.passable( dest ) &&
                 here.clear_path( z->pos(), dest, 3, 1, 100 ) ) {
-                here.add_field( dest, fd_relax_gas, rng( 1, 3 ) );
+                here.add_field( dest, field_fd_relax_gas, rng( 1, 3 ) );
             }
         }
     }
@@ -4528,7 +4540,7 @@ bool mattack::riotbot( monster *z )
             for( const tripoint &dest : here.points_in_radius( z->pos(), 2 ) ) {
                 if( here.passable( dest ) &&
                     here.clear_path( z->pos(), dest, 3, 1, 100 ) ) {
-                    here.add_field( dest, fd_tear_gas, rng( 1, 3 ) );
+                    here.add_field( dest, field_fd_tear_gas, rng( 1, 3 ) );
                 }
             }
 
@@ -4566,7 +4578,7 @@ bool mattack::riotbot( monster *z )
             if( !here.is_transparent( elem ) ) {
                 break;
             }
-            here.add_field( elem, fd_dazzling, 1 );
+            here.add_field( elem, field_fd_dazzling, 1 );
         }
         return true;
 
@@ -4724,8 +4736,8 @@ bool mattack::tindalos_teleport( monster *z )
                     z->setpos( dest );
                     // Not teleporting if it means losing sight of our current target
                     if( z->sees( *target ) ) {
-                        here.add_field( oldpos, fd_tindalos_rift, 2 );
-                        here.add_field( dest, fd_tindalos_rift, 2 );
+                        here.add_field( oldpos, field_fd_tindalos_rift, 2 );
+                        here.add_field( dest, field_fd_tindalos_rift, 2 );
                         add_msg_if_player_sees( *z, m_bad,
                                                 _( "The %s dissipates and reforms itself from the angles in the corner." ), z->name() );
                         return true;
@@ -4765,7 +4777,7 @@ bool mattack::flesh_tendril( monster *z )
         if( monster *const summoned = g->place_critter_around( spawned, z->pos(), 1 ) ) {
             z->mod_moves( -to_moves<int>( 1_seconds ) );
             summoned->make_ally( *z );
-            get_map().propagate_field( z->pos(), fd_gibs_flesh, 75, 1 );
+            get_map().propagate_field( z->pos(), field_fd_gibs_flesh, 75, 1 );
             add_msg_if_player_sees( *z, m_warning, _( "A %s struggles to pull itself free from the %s!" ),
                                     summoned->name(), z->name() );
         }
