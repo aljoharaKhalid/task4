@@ -70,7 +70,7 @@
   {
     "id": "bio_lightning",
     "type": "GUN",
-    "name": { "str": "Chain Lightning" },
+    "name": { "str": "chain lightning" },
     "description": "this a pseudo item",
     "volume": "3 L",
     "price": "0 cent",
@@ -91,7 +91,7 @@
   {
     "id": "mut_quills",
     "type": "GUN",
-    "name": { "str_sp": "Assault barbs" },
+    "name": { "str_sp": "assault barbs" },
     "description": "this a pseudo item",
     "volume": "3 L",
     "price": "0 cent",
@@ -110,7 +110,7 @@
   {
     "id": "mut_longpull",
     "type": "GUN",
-    "name": { "str": "Ranged pulling implement" },
+    "name": { "str": "ranged pulling implement" },
     "description": "this a pseudo item",
     "volume": "100 ml",
     "price": "0 cent",

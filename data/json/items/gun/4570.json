@@ -10,7 +10,7 @@
     "variants": [
       {
         "id": "1895sbl",
-        "name": { "str": "Marlin 1895 SBL" },
+        "name": { "str": "Marlin 1895 SBL", "str_pl": "Marlin 1895s SBL" },
         "description": "A handy but powerful lever-action rifle chambered for .45-70 Government, the Marlin 1895 SBL was designed as a guide rifle, a rifle designed to defend against animals such as bears in the wilderness.  While advertised as capable of defending against T-Rex, there has yet been any testing against actual T-Rexes, and hopefully remains that way."
       }
     ],
@@ -56,7 +56,7 @@
     "variants": [
       {
         "id": "bfr",
-        "name": { "str": "Magnum Research BFR" },
+        "name": { "str": "Magnum Research BFR", "str_pl": "Magnums Research BFR" },
         "description": "The Magnum Research BFR (Biggest, Finest Revolver) are a series of single action revolvers chambered in calibers from anywhere from .357 Magnum, to rifle calibers such as 45-70.  While rifle caliber chamberings for pistols are no doubt uncomfortable to shoot, they do see some use in the sport of handgun hunting, or rarely as range toys.  Due to its loading gate, it prevents the use of speedloaders and can make for lengthy reload times, so it's best to make every shot count."
       }
     ],
@@ -99,7 +99,7 @@
     "variants": [
       {
         "id": "sharps",
-        "name": { "str": "1874 Sharps", "str_pl": "1874 Sharpses" },
+        "name": { "str": "1874 Sharps", "str_pl": "1874s Sharps" },
         "description": "The Sharps rifle series are antique, falling block rifles that saw service far back as the American Civil War.  The 1874 Sharps is one of the first rifles to utilize metallic cartridges, a revolutionary technology back in those days.  While they were chambered in 45-70, modern day smokeless loads would blow up older versions.  Thankfully, this reproduction from Uberti can handle modern day 45-70 loads."
       }
     ],
