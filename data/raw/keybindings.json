@@ -3501,6 +3501,12 @@
   },
   {
     "type": "keybinding",
+    "id": "CONTINUE_RECORDING",
+    "category": "PATH_MANAGER",
+    "name": "Continue recording"
+  },
+  {
+    "type": "keybinding",
     "id": "STOP_RECORDING",
     "category": "PATH_MANAGER",
     "name": "Stop recording"
