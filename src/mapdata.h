@@ -38,37 +38,47 @@ connect_group get_connect_group( const std::string &name );
 
 template <typename E> struct enum_traits;
 
-struct map_bash_info {
-    int str_min;            // min str(*) required to bash
-    int str_max;            // max str required: bash succeeds if str >= random # between str_min & str_max
-    int str_min_blocked;    // same as above; alternate values for has_adjacent_furniture(...) == true
-    int str_max_blocked;
-    int str_min_supported;  // Alternative values for floor supported by something from below
-    int str_max_supported;
-    int explosive;          // Explosion on destruction
-    int sound_vol;          // sound volume of breaking terrain/furniture
-    int sound_fail_vol;     // sound volume on fail
-    int collapse_radius;    // Radius of the tent supported by this tile
-    int fd_bash_move_cost = 100; // cost to bash a field
-    bool destroy_only;      // Only used for destroying, not normally bashable
-    bool bash_below;        // This terrain is the roof of the tile below it, try to destroy that too
-    item_group_id drop_group; // item group of items that are dropped when the object is bashed
-    translation sound;      // sound made on success ('You hear a "smash!"')
-    translation sound_fail; // sound  made on fail
-    translation field_bash_msg_success; // message upon successfully bashing a field
-    ter_str_id ter_set;    // terrain to set (REQUIRED for terrain))
+struct map_common_bash_info { //TODO: Half of this shouldn't be common
+        int str_min;            // min str(*) required to bash
+        int str_max;            // max str required: bash succeeds if str >= random # between str_min & str_max
+        int str_min_blocked;    // same as above; alternate values for has_adjacent_furniture(...) == true
+        int str_max_blocked;
+        int str_min_supported;  // Alternative values for floor supported by something from below
+        int str_max_supported;
+        int explosive;          // Explosion on destruction
+        int sound_vol;          // sound volume of breaking terrain/furniture
+        int sound_fail_vol;     // sound volume on fail
+        int collapse_radius;    // Radius of the tent supported by this tile
+        bool destroy_only;      // Only used for destroying, not normally bashable
+        bool bash_below;        // This terrain is the roof of the tile below it, try to destroy that too
+        item_group_id drop_group; // item group of items that are dropped when the object is bashed
+        translation sound;      // sound made on success ('You hear a "smash!"')
+        translation sound_fail; // sound  made on fail
+        std::vector<furn_str_id> tent_centers;
+        virtual void load( const JsonObject &jo, const bool was_loaded, const std::string &context );
+        virtual void check( const std::string &id ) const;
+    public:
+        virtual ~map_common_bash_info() = default;
+};
+struct map_ter_bash_info : map_common_bash_info {
+    ter_str_id ter_set;    // terrain to set
     ter_str_id ter_set_bashed_from_above; // terrain to set if bashed from above (defaults to ter_set)
+    map_ter_bash_info() {};
+    void load( const JsonObject &jo, const bool was_loaded, const std::string &context ) override;
+    void check( const std::string &id ) const override;
+};
+struct map_furn_bash_info : map_common_bash_info {
     furn_str_id furn_set;   // furniture to set (only used by furniture, not terrain)
-    // ids used for the special handling of tents
-    std::vector<furn_str_id> tent_centers;
-    map_bash_info();
-    enum map_object_type {
-        furniture = 0,
-        terrain,
-        field
-    };
-    bool load( const JsonObject &jsobj, std::string_view member, map_object_type obj_type,
-               const std::string &context );
+    map_furn_bash_info() {};
+    void load( const JsonObject &jo, const bool was_loaded, const std::string &context ) override;
+    void check( const std::string &id ) const override;
+};
+struct map_fd_bash_info : map_common_bash_info {
+    int fd_bash_move_cost; // cost to bash a field
+    translation field_bash_msg_success; // message upon successfully bashing a field
+    map_fd_bash_info() {};
+    void load( const JsonObject &jo, const bool was_loaded, const std::string &context ) override;
+    void check( const std::string &id ) const override;
 };
 struct map_deconstruct_skill {
     skill_id id; // Id of skill to increase on successful deconstruction
@@ -76,19 +86,28 @@ struct map_deconstruct_skill {
     int max; // Level cap after which no xp is recieved but practise still occurs delaying rust
     double multiplier; // Multiplier of the base xp given that's calced using the mean of the min and max
 };
-struct map_deconstruct_info {
-    // Only if true, the terrain/furniture can be deconstructed
-    bool can_do;
-    // This terrain provided a roof, we need to tear it down now
-    bool deconstruct_above;
-    // items you get when deconstructing.
-    item_group_id drop_group;
-    ter_str_id ter_set;    // terrain to set (REQUIRED for terrain))
-    furn_str_id furn_set;    // furniture to set (only used by furniture, not terrain)
-    map_deconstruct_info();
-    std::optional<map_deconstruct_skill> skill;
-    bool load( const JsonObject &jsobj, std::string_view member, bool is_furniture,
-               const std::string &context );
+struct map_common_deconstruct_info {
+        // This terrain provided a roof, we need to tear it down now
+        bool deconstruct_above = false;
+        // items you get when deconstructing.
+        item_group_id drop_group;
+        std::optional<map_deconstruct_skill> skill;
+        virtual void load( const JsonObject &jo, const bool was_loaded, const std::string &context );
+        virtual void check( const std::string &id ) const;
+    public:
+        virtual ~map_common_deconstruct_info() = default;
+};
+struct map_ter_deconstruct_info : map_common_deconstruct_info {
+    ter_str_id ter_set = ter_str_id::NULL_ID();
+    void load( const JsonObject &jo, const bool was_loaded, const std::string &context ) override;
+    void check( const std::string &id ) const override;
+    map_ter_deconstruct_info() {};
+};
+struct map_furn_deconstruct_info : map_common_deconstruct_info {
+    furn_str_id furn_set = furn_str_id::NULL_ID();
+    void load( const JsonObject &jo, const bool was_loaded, const std::string &context ) override;
+    void check( const std::string &id ) const override;
+    map_furn_deconstruct_info() {};
 };
 struct map_shoot_info {
     // Base chance to hit the object at all (defaults to 100%)
@@ -132,72 +151,14 @@ struct plant_data {
 };
 
 /*
- * List of known flags, used in both terrain.json and furniture.json.
- * TRANSPARENT - Players and monsters can see through/past it. Also sets ter_t.transparent
- * FLAT - Player can build and move furniture on
- * CONTAINER - Items on this square are hidden until looted by the player
- * PLACE_ITEM - Valid terrain for place_item() to put items on
- * DOOR - Can be opened (used for NPC pathfinding)
- * FLAMMABLE - Can be lit on fire
- * FLAMMABLE_HARD - Harder to light on fire, but still possible
- * DIGGABLE - Digging monsters, seeding monsters, digging with shovel, etc
- * LIQUID - Blocks movement, but isn't a wall (lava, water, etc)
- * SWIMMABLE - Player and monsters can swim through it
- * SHARP - May do minor damage to players/monsters passing through it
- * ROUGH - May hurt the player's feet
- * SEALED - Can't use 'e' to retrieve items, must smash open first
- * NOITEM - Items 'fall off' this space
- * NO_SIGHT - When on this tile sight is reduced to 1
- * NO_SCENT - Scent on this tile (and thus scent diffusing through it) is reduced to 0. This acts like a wall for scent
- * MOUNTABLE - Player can fire mounted weapons from here (e.g. M2 Browning)
- * DESTROY_ITEM - Items that land here are destroyed
- * GOES_DOWN - Can use '>' to go down a level
- * GOES_UP - Can use '<' to go up a level
- * CONSOLE - Used as a computer
- * ALARMED - Sets off an alarm if smashed
- * SUPPORTS_ROOF - Used as a boundary for roof construction
- * MINEABLE - Able to broken with the jackhammer/pickaxe, but does not necessarily support a roof
- * INDOORS - Has roof over it; blocks rain, sunlight, etc.
- * COLLAPSES - Has a roof that can collapse
- * FLAMMABLE_ASH - Burns to ash rather than rubble.
- * REDUCE_SCENT - Reduces scent even more, only works if also bashable
- * FIRE_CONTAINER - Stops fire from spreading (brazier, wood stove, etc)
- * SUPPRESS_SMOKE - Prevents smoke from fires, used by ventilated wood stoves etc
- * PLANT - A "furniture" that grows and fruits
- * LIQUIDCONT - Furniture that contains liquid, allows for contents to be accessed in some checks even if SEALED
- * OPENCLOSE_INSIDE - If it's a door (with an 'open' or 'close' field), it can only be opened or closed if you're inside.
- * PERMEABLE - Allows gases to flow through unimpeded.
- * RAMP - Higher z-levels can be accessed from this tile
- * EASY_DECONSTRUCT - Player can deconstruct this without tools
- * HIDE_PLACE - Creature on this tile can't be seen by other creature not standing on adjacent tiles
- * BLOCK_WIND - This tile will partially block wind
- * FLAT_SURF - Furniture or terrain or vehicle part with flat hard surface (ex. table, but not chair; tree stump, etc.).
- * ROAD - Mainly affects the speed of rollerblades
- *
- * Currently only used for Fungal conversions
- * WALL - This terrain is an upright obstacle
- * THIN_OBSTACLE - This terrain is a thin obstacle, i.e. fence
- * ORGANIC - This furniture is partly organic
- * FLOWER - This furniture is a flower
- * SHRUB - This terrain is a shrub
- * TREE - This terrain is a tree
- * HARVESTED - This terrain has been harvested so it won't bear any fruit
- * YOUNG - This terrain is a young tree
- * FUNGUS - Fungal covered
- *
- * Furniture only:
- * BLOCKSDOOR - This will boost map terrain's resistance to bashing if str_*_blocked is set (see map_bash_info)
- * WORKBENCH1/WORKBENCH2/WORKBENCH3 - This is an adequate/good/great workbench for crafting.  Must be paired with a workbench iexamine.
- */
-
-/*
  * Note; All flags are defined as strings dynamically in data/json/terrain.json and furniture.json. The list above
  * represent the common builtins. The enum below is an alternative means of fast-access, for those flags that are checked
  * so much that strings produce a significant performance penalty. The following are equivalent:
- *  m->has_flag("FLAMMABLE");     //
+ *  m->has_flag("FLAMMABLE");
  *  m->has_flag(ter_furn_flag::TFLAG_FLAMMABLE); // ~ 20 x faster than the above, ( 2.5 x faster if the above uses static const std::string str_flammable("FLAMMABLE");
  * To add a new ter_bitflag, add below and in mapdata.cpp
  * Order does not matter.
+ * For descriptions see /docs/JSON_FLAGS.md
  */
 enum class ter_furn_flag : int {
     TFLAG_TRANSPARENT,
@@ -339,9 +300,6 @@ struct connect_group {
     public:
         connect_group_id id;
         int index;
-        std::set<ter_furn_flag> group_flags;
-        std::set<ter_furn_flag> connects_to_flags;
-        std::set<ter_furn_flag> rotates_to_flags;
 
         static void load( const JsonObject &jo );
         static void reset();
@@ -451,8 +409,8 @@ class activity_data_furn : public activity_data_common
 void init_mapdata();
 
 struct map_data_common_t {
-        map_bash_info        bash;
-        map_deconstruct_info deconstruct;
+        std::set<emit_id> emissions;
+        translation lockpick_message; // Lockpick action: message when successfully lockpicked
         cata::value_ptr<map_shoot_info> shoot;
 
     public:
@@ -544,11 +502,13 @@ struct map_data_common_t {
             return bitflags[flag];
         }
 
-        void extraprocess_flags( ter_furn_flag flag );
-
         void set_flag( const std::string &flag );
 
         void set_flag( ter_furn_flag flag );
+
+        void unset_flag( const std::string &flag );
+
+        void unset_flags();
 
         // Terrain groups of this type, for others to connect or rotate to; not symmetric, passive part
         std::bitset<NUM_TERCONN> connect_groups;
@@ -608,8 +568,10 @@ struct ter_t : map_data_common_t {
     ter_str_id open;  // Open action: transform into terrain with matching id
     ter_str_id close; // Close action: transform into terrain with matching id
 
+    map_ter_bash_info bash;
+    std::optional<map_ter_deconstruct_info> deconstruct;
+
     ter_str_id lockpick_result; // Lockpick action: transform when successfully lockpicked
-    translation lockpick_message; // Lockpick action: message when successfully lockpicked
 
     cata::value_ptr<activity_data_ter> boltcut; // Bolt cutting action data
     cata::value_ptr<activity_data_ter> hacksaw; // Hacksaw action data
@@ -622,7 +584,6 @@ struct ter_t : map_data_common_t {
 
     trap_id trap; // The id of the trap located at this terrain. Limit one trap per tile currently.
 
-    std::set<emit_id> emissions;
     std::set<itype_id> allowed_template_id;
 
     ter_t();
@@ -651,11 +612,10 @@ struct furn_t : map_data_common_t {
     furn_str_id open;  // Open action: transform into furniture with matching id
     furn_str_id close; // Close action: transform into furniture with matching id
     furn_str_id lockpick_result; // Lockpick action: transform when successfully lockpicked
-    translation lockpick_message; // Lockpick action: message when successfully lockpicked
+    map_furn_bash_info bash;
+    std::optional<map_furn_deconstruct_info> deconstruct;
     itype_id crafting_pseudo_item;
     units::volume keg_capacity = 0_ml;
-    /** Emissions of furniture */
-    std::set<emit_id> emissions;
 
     units::temperature_delta bonus_fire_warmth_feet = 0.6_C_delta;
     itype_id deployed_item; // item id string used to create furniture
