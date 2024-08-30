@@ -2235,11 +2235,14 @@ static void cycle_action( item &weap, const itype_id &ammo, const tripoint &pos 
 {
     map &here = get_map();
     // eject casings and linkages in random direction avoiding walls using player position as fallback
-    std::vector<tripoint> tiles = closest_points_first( pos, 1 );
-    tiles.erase( tiles.begin() );
-    tiles.erase( std::remove_if( tiles.begin(), tiles.end(), [&]( const tripoint & e ) {
-        return !here.passable( e );
-    } ), tiles.end() );
+    std::vector<tripoint> tiles;
+    tiles.reserve( 8 );
+    find_point_closest_first( pos, 1, 1, [&here, &tiles]( const tripoint & e ) {
+        if( here.passable( e ) ) {
+            tiles.push_back( e );
+        }
+        return false;
+    } );
     tripoint eject = tiles.empty() ? pos : random_entry( tiles );
 
     // for turrets try and drop casings or linkages directly to any CARGO part on the same tile
@@ -3161,12 +3164,12 @@ tripoint target_ui::choose_initial_target()
 
     // Try closest practice target
     map &here = get_map();
-    const std::vector<tripoint> nearby = closest_points_first( src, range );
-    const auto target_spot = std::find_if( nearby.begin(), nearby.end(),
-    [this, &here]( const tripoint & pt ) {
+    std::optional<tripoint> target_spot = find_point_closest_first( src, range, [this,
+    &here]( const tripoint & pt ) {
         return here.tr_at( pt ).id == tr_practice_target && this->you->sees( pt );
     } );
-    if( target_spot != nearby.end() ) {
+
+    if( target_spot != std::nullopt ) {
         return *target_spot;
     }
 
