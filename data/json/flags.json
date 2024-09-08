@@ -1335,10 +1335,6 @@
     "type": "json_flag"
   },
   {
-    "id": "CARNIVORE_DIET",
-    "type": "json_flag"
-  },
-  {
     "id": "CARNIVORE_OK",
     "type": "json_flag"
   },
