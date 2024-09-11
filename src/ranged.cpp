@@ -3164,7 +3164,7 @@ tripoint target_ui::choose_initial_target()
 
     // Try closest practice target
     map &here = get_map();
-    std::optional<tripoint> target_spot = find_point_closest_first( src, range, [this,
+    std::optional<tripoint> target_spot = find_point_closest_first( src, 0, range, [this,
     &here]( const tripoint & pt ) {
         return here.tr_at( pt ).id == tr_practice_target && this->you->sees( pt );
     } );
