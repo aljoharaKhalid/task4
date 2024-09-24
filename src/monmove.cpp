@@ -41,6 +41,7 @@
 #include "options.h"
 #include "pathfinding.h"
 #include "pimpl.h"
+#include "point.h"
 #include "rng.h"
 #include "scent_map.h"
 #include "sounds.h"
@@ -1782,11 +1783,14 @@ bool monster::attack_at( const tripoint &p )
 
 static tripoint find_closest_stair( const tripoint &near_this, const ter_furn_flag stair_type )
 {
-    map &here = get_map();
-    for( const tripoint &candidate : closest_points_first( near_this, 10 ) ) {
-        if( here.has_flag( stair_type, candidate ) ) {
-            return candidate;
-        }
+    const map &here = get_map();
+    std::optional<tripoint> candidate = find_point_closest_first( near_this, 0, 10, [&here,
+    stair_type]( const tripoint & candidate ) {
+        return here.has_flag( stair_type, candidate );
+    } );
+
+    if( candidate != std::nullopt ) {
+        return *candidate;
     }
     // we didn't find it
     return near_this;

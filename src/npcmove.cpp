@@ -3174,8 +3174,7 @@ void npc::avoid_friendly_fire()
     center.y = std::round( center.y / friend_count );
     center.z = std::round( center.z / friend_count );
 
-    std::vector<tripoint> candidates = closest_points_first( pos(), 1 );
-    candidates.erase( candidates.begin() );
+    std::vector<tripoint> candidates = closest_points_first( pos(), 1, 1 );
     std::sort( candidates.begin(), candidates.end(),
     [&tar, &center]( const tripoint & l, const tripoint & r ) {
         return ( rl_dist( l, tar ) - rl_dist( l, center ) ) <
